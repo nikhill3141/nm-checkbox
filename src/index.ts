@@ -12,7 +12,7 @@ async function start(){
     const app = express()
     const httpServer = createServer(app)
     const io = new Server(httpServer)
-    const TOTAL = 1000
+    const TOTAL = 500
     const checkboxStates = new Array(TOTAL).fill(null)
 
     app.get("/",(req:Request, res:Response) =>{
