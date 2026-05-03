@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+<!doctype html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -19,7 +20,20 @@
       align-items: center;
       height: 100vh;
       overflow: hidden;
-     
+    }
+
+    .parent {
+      display: flex;
+      flex-direction: column;
+      align-items: end;
+      gap: 10px;
+    }
+
+    .topbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      color: #38bdf8;
     }
 
     .container {
@@ -28,7 +42,7 @@
       background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(12px);
       border-radius: 18px;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
       padding: 30px;
       display: flex;
       flex-direction: column;
@@ -82,7 +96,11 @@
       box-shadow: 0 0 10px #38bdf8;
     }
 
-    /* Optional scrollbar styling */
+    input[type="checkbox"]:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
     .grid::-webkit-scrollbar {
       width: 6px;
     }
@@ -91,57 +109,180 @@
       background: #38bdf8;
       border-radius: 10px;
     }
+
+    .btn {
+      height: 40px;
+      padding: 0 15px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      background: #38bdf8;
+      color: black;
+      font-weight: 600;
+    }
+
+    .logout {
+      background: #ef4444;
+      color: white;
+    }
   </style>
+
 </head>
 
 <body>
-  
-  <div class="container">
-    <div class="title">NM Checkbox</div>
-    <div class="grid" id="grid"></div>
+  <div class="parent">
+
+```
+<div class="topbar">
+  <span id="userInfo"></span>
+  <button id="signin" class="btn">Sign In</button>
+  <button id="logout" class="btn logout" style="display:none;">Logout</button>
+</div>
+
+<div class="container">
+  <div class="title">NM Checkbox</div>
+  <div class="grid" id="grid"></div>
+</div>
+```
+
   </div>
 
-  <!-- scripts -->
-   <script src="/socket.io/socket.io.js"></script>
+  <!-- socket -->
+
+  <script src="/socket.io/socket.io.js"></script>
 
   <script>
-    const TOTAL = 500; 
+    const TOTAL = 500;
     const socket = io();
-
     const grid = document.getElementById("grid");
 
-    new Array(TOTAL).fill(null).forEach((_,index)=>{
+    let isLoggedIn = false;
+
+    function setCheckboxAccess() {
+      document.querySelectorAll("input[type='checkbox']")
+        .forEach(cb => cb.disabled = !isLoggedIn);
+    }
+
+    new Array(TOTAL).fill(null).forEach((_, index) => {
       const div = document.createElement("div");
       div.className = "checkbox";
 
       let input = document.createElement("input");
-      input.id = `checkbox-${index}`
+      input.id = `checkbox-${index}`;
       input.type = "checkbox";
 
+      input.addEventListener("change", (event) => {
+        if (!isLoggedIn) return;
+        let checked = event.target.checked;
+        socket.emit("client:checked", { checked, index });
+      });
 
-      input.addEventListener('change',(event)=>{
-        let checked = event.target.checked
-        socket.emit("client:checked",{checked,index})
-        
-      })
       div.appendChild(input);
-      grid.appendChild(div)
-    }) 
+      grid.appendChild(div);
+    });
 
-    socket.on("server:checked", (data)=>{
-      document.querySelector(`#checkbox-${data.index}`).checked=data.checked
-      // console.log(data)
-    })
-    socket.on("server:checkboxStates", (data)=>{
-      console.log(data)
-      data.forEach((_,index)=>{
-        document.querySelector(`#checkbox-${index}`).checked=data[index]
-      })
-      
-    })
+    socket.on("server:checkboxStates", (data) => {
+      data.forEach((_, index) => {
+        document.querySelector(`#checkbox-${index}`).checked = data[index];
+      });
+    });
+
+    socket.on("server:checked", (data) => {
+      document.querySelector(`#checkbox-${data.index}`).checked = data.checked;
+    });
   </script>
-  
 
+  <!-- SIGN IN -->
+
+  <script>
+    const signInBtn = document.getElementById("signin");
+
+    signInBtn.addEventListener("click", () => {
+      const NM_AUTH_URL = "https://nm-auth-service.onrender.com/nm-auth";
+      const REDIRECT_URL = "https://nm-checkbox.onrender.com/";
+      const CLIENT_ID = "0075a3ec-9ebb-484a-9f91-b8ea9d21e254";
+
+      window.location.href =
+        `${NM_AUTH_URL}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URL}`;
+    });
+  </script>
+
+  <!-- CALLBACK + TOKEN -->
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+
+    if (code) {
+      fetch("/api/callback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code,
+          redirectUri: window.location.origin + "/"
+        }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          localStorage.setItem("access_token", data.access_token);
+          localStorage.setItem("id_token", data.id_token);
+
+          window.history.replaceState({}, document.title, "/");
+          loadUser();
+        });
+    }
+  </script>
+
+  <!-- USER INFO + LOGOUT -->
+
+  <script>
+    const userInfoEl = document.getElementById("userInfo");
+    const logoutBtn = document.getElementById("logout");
+
+    async function loadUser() {
+      const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        isLoggedIn = false;
+        userInfoEl.textContent = "";
+        logoutBtn.style.display = "none";
+        signInBtn.style.display = "block";
+        setCheckboxAccess();
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          "https://nm-auth-service.onrender.com/userinfo",
+          {
+            headers: {
+              Authorization: "Bearer " + token
+            }
+          }
+        );
+
+        const user = await res.json();
+
+        isLoggedIn = true;
+        userInfoEl.textContent = user.name || user.email;
+        logoutBtn.style.display = "block";
+        signInBtn.style.display = "none";
+        setCheckboxAccess();
+
+      } catch {
+        localStorage.clear();
+        isLoggedIn = false;
+        setCheckboxAccess();
+      }
+    }
+
+    logoutBtn.addEventListener("click", () => {
+      localStorage.clear();
+      location.reload();
+    });
+
+    loadUser();
+  </script>
 
 </body>
 </html>
