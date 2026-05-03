@@ -21,39 +21,43 @@ async function start() {
       return res.sendFile(path.resolve("public", "checkbox.html"));
     });
 
-  app.post("/api/callback", async (req, res) => {
-  const { code, redirectUri } = req.body;
+    app.post("/api/callback", async (req, res) => {
+      const { code, redirectUri } = req.body;
 
-  if (!code || !redirectUri) {
-    return res.status(400).json({ error: "Missing code or redirectUri" });
-  }
+      if (!code || !redirectUri) {
+        return res.status(400).json({ error: "Missing code or redirectUri" });
+      }
 
-  try {
-    const response = await fetch(process.env.OIDC_TOKEN_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        grant_type: "authorization_code",
-        code,
-        client_id: process.env.CLIENT_ID,
-        client_secret: process.env.CLIENT_SECRET,
-        redirect_uri: redirectUri,
-      }),
+      try {
+        const params = new URLSearchParams();
+        params.append("grant_type", "authorization_code");
+        params.append("code", code);
+        params.append("client_id", process.env.CLIENT_ID!);
+        params.append("client_secret", process.env.CLIENT_SECRET!);
+        params.append("redirect_uri", redirectUri);
+
+        const response = await fetch(process.env.OIDC_TOKEN_ENDPOINT!, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: params,
+        });
+
+        const data = await response.json();
+
+        console.log("TOKEN ENDPOINT RESPONSE:", data); // 🔥 DEBUG
+
+        if (!response.ok) {
+          return res.status(response.status).json(data);
+        }
+
+        return res.json(data);
+      } catch (err) {
+        console.error("TOKEN ERROR:", err);
+        return res.status(500).json({ error: "Token exchange failed" });
+      }
     });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return res.status(response.status).json(data);
-    }
-
-    return res.json(data);
-  } catch (err) {
-    return res.status(500).json({ error: "Token exchange failed" });
-  }
-});
 
     //io connection
     io.on("connection", (socket) => {
