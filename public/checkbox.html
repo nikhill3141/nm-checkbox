@@ -2,287 +2,295 @@
 
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>NM Checkbox</title>
+<meta charset="UTF-8" />
+<title>NM Checkbox</title>
 
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: "Segoe UI", sans-serif;
-    }
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",sans-serif}
 
-    body {
-      background: linear-gradient(135deg, #0f172a, #1e293b);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      overflow: hidden;
-    }
+body{
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  display:flex;justify-content:center;align-items:center;
+  height:100vh;
+}
 
-    .parent {
-      display: flex;
-      flex-direction: column;
-      align-items: end;
-      gap: 10px;
-    }
+.parent{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:15px;
+}
 
-    .topbar {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      color: #38bdf8;
-    }
+.topbar{
+  width:800px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 15px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(10px);
+  color:#38bdf8;
+}
 
-    .container {
-      width: 800px;
-      height: 700px;
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(12px);
-      border-radius: 18px;
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-      padding: 30px;
-      display: flex;
-      flex-direction: column;
-    }
+.user{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
 
-    .title {
-      text-align: center;
-      color: #38bdf8;
-      font-size: 22px;
-      font-weight: 600;
-      margin-top: 30px;
-      margin-bottom: 15px;
-      letter-spacing: 1px;
-    }
+.avatar{
+  width:35px;
+  height:35px;
+  border-radius:50%;
+  background:#38bdf8;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#000;
+  font-weight:bold;
+}
 
-    .grid {
-      flex: 1;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
-      gap: 10px;
-      overflow-y: auto;
-      padding: 5px;
-      margin-top: 10px;
-    }
+.btn{
+  padding:8px 14px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  font-weight:600;
+}
 
-    .checkbox {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+.signin{background:#38bdf8;color:black}
+.logout{background:#ef4444;color:white}
 
-    input[type="checkbox"] {
-      appearance: none;
-      width: 30px;
-      height: 30px;
-      border: 2px solid #64748b;
-      border-radius: 6px;
-      background: transparent;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
+.container{
+  width:800px;height:700px;
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(12px);
+  border-radius:18px;
+  box-shadow:0 15px 40px rgba(0,0,0,0.5);
+  padding:25px;
+  display:flex;flex-direction:column;
+}
 
-    input[type="checkbox"]:hover {
-      border-color: #38bdf8;
-      transform: scale(1.1);
-    }
+.title{
+  text-align:center;
+  color:#38bdf8;
+  font-size:22px;
+  margin-bottom:15px;
+}
 
-    input[type="checkbox"]:checked {
-      background: #38bdf8;
-      border-color: #38bdf8;
-      box-shadow: 0 0 10px #38bdf8;
-    }
+.grid{
+  flex:1;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(30px,1fr));
+  gap:10px;
+  overflow:auto;
+}
 
-    input[type="checkbox"]:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
+.checkbox{
+  display:flex;justify-content:center;align-items:center;
+}
 
-    .grid::-webkit-scrollbar {
-      width: 6px;
-    }
+input[type="checkbox"]{
+  appearance:none;
+  width:30px;height:30px;
+  border:2px solid #64748b;
+  border-radius:6px;
+  cursor:pointer;
+}
 
-    .grid::-webkit-scrollbar-thumb {
-      background: #38bdf8;
-      border-radius: 10px;
-    }
+input[type="checkbox"]:checked{
+  background:#38bdf8;
+  border-color:#38bdf8;
+}
 
-    .btn {
-      height: 40px;
-      padding: 0 15px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      background: #38bdf8;
-      color: black;
-      font-weight: 600;
-    }
-
-    .logout {
-      background: #ef4444;
-      color: white;
-    }
-  </style>
+input[type="checkbox"]:disabled{
+  opacity:0.3;
+  cursor:not-allowed;
+}
+</style>
 
 </head>
 
 <body>
-  <div class="parent">
 
-```
+<div class="parent">
+
 <div class="topbar">
-  <span id="userInfo"></span>
-  <button id="signin" class="btn">Sign In</button>
-  <button id="logout" class="btn logout" style="display:none;">Logout</button>
+  <div class="user" id="userSection">
+    <div class="avatar" id="avatar">?</div>
+    <span id="userName">Not logged in</span>
+  </div>
+
+  <div>
+    <button id="signin" class="btn signin">Sign In</button>
+    <button id="logout" class="btn logout" style="display:none;">Logout</button>
+  </div>
 </div>
 
 <div class="container">
   <div class="title">NM Checkbox</div>
   <div class="grid" id="grid"></div>
 </div>
-```
 
-  </div>
+</div>
 
-  <!-- socket -->
+<script src="/socket.io/socket.io.js"></script>
 
-  <script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+const TOTAL = 500;
+const grid = document.getElementById("grid");
 
-  <script>
-    const TOTAL = 500;
-    const socket = io();
-    const grid = document.getElementById("grid");
+let isLoggedIn = false;
 
-    let isLoggedIn = false;
+// create checkboxes
+for(let i=0;i<TOTAL;i++){
+  const div=document.createElement("div");
+  div.className="checkbox";
 
-    function setCheckboxAccess() {
-      document.querySelectorAll("input[type='checkbox']")
-        .forEach(cb => cb.disabled = !isLoggedIn);
-    }
+  const input=document.createElement("input");
+  input.type="checkbox";
+  input.id="cb-"+i;
 
-    new Array(TOTAL).fill(null).forEach((_, index) => {
-      const div = document.createElement("div");
-      div.className = "checkbox";
+  input.addEventListener("change",(e)=>{
+    if(!isLoggedIn) return;
+    socket.emit("client:checked",{index:i,checked:e.target.checked});
+  });
 
-      let input = document.createElement("input");
-      input.id = `checkbox-${index}`;
-      input.type = "checkbox";
+  div.appendChild(input);
+  grid.appendChild(div);
+}
 
-      input.addEventListener("change", (event) => {
-        if (!isLoggedIn) return;
-        let checked = event.target.checked;
-        socket.emit("client:checked", { checked, index });
-      });
+function updateAccess(){
+  document.querySelectorAll("input").forEach(cb=>{
+    cb.disabled=!isLoggedIn;
+  });
+}
 
-      div.appendChild(input);
-      grid.appendChild(div);
-    });
+// socket sync
+socket.on("server:checkboxStates",(data)=>{
+  data.forEach((v,i)=>{
+    document.getElementById("cb-"+i).checked=v;
+  });
+});
 
-    socket.on("server:checkboxStates", (data) => {
-      data.forEach((_, index) => {
-        document.querySelector(`#checkbox-${index}`).checked = data[index];
-      });
-    });
+socket.on("server:checked",(d)=>{
+  document.getElementById("cb-"+d.index).checked=d.checked;
+});
+</script>
 
-    socket.on("server:checked", (data) => {
-      document.querySelector(`#checkbox-${data.index}`).checked = data.checked;
-    });
-  </script>
+<script>
+// SIGN IN
+document.getElementById("signin").onclick=()=>{
+  const AUTH="https://nm-auth-service.onrender.com/nm-auth";
+  const CLIENT_ID="0075a3ec-9ebb-484a-9f91-b8ea9d21e254";
+  const REDIRECT=window.location.origin + "/";
 
-  <!-- SIGN IN -->
+  location.href=`${AUTH}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT}`;
+};
+</script>
 
-  <script>
-    const signInBtn = document.getElementById("signin");
+<script>
+// HANDLE CODE
+(async ()=>{
+  const params=new URLSearchParams(location.search);
+  const code=params.get("code");
 
-    signInBtn.addEventListener("click", () => {
-      const NM_AUTH_URL = "https://nm-auth-service.onrender.com/nm-auth";
-      const REDIRECT_URL = "https://nm-checkbox.onrender.com/";
-      const CLIENT_ID = "0075a3ec-9ebb-484a-9f91-b8ea9d21e254";
+  if(!code) return;
 
-      window.location.href =
-        `${NM_AUTH_URL}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URL}`;
-    });
-  </script>
+  console.log("code received:",code);
 
-  <!-- CALLBACK + TOKEN -->
-
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
-
-    if (code) {
-      fetch("/api/callback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code,
-          redirectUri: window.location.origin + "/"
-        }),
+  try{
+    const res=await fetch("/api/callback",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        code,
+        redirectUri:window.location.origin+"/"
       })
-        .then(res => res.json())
-        .then(data => {
-          localStorage.setItem("access_token", data.access_token);
-          localStorage.setItem("id_token", data.id_token);
-
-          window.history.replaceState({}, document.title, "/");
-          loadUser();
-        });
-    }
-  </script>
-
-  <!-- USER INFO + LOGOUT -->
-
-  <script>
-    const userInfoEl = document.getElementById("userInfo");
-    const logoutBtn = document.getElementById("logout");
-
-    async function loadUser() {
-      const token = localStorage.getItem("access_token");
-
-      if (!token) {
-        isLoggedIn = false;
-        userInfoEl.textContent = "";
-        logoutBtn.style.display = "none";
-        signInBtn.style.display = "block";
-        setCheckboxAccess();
-        return;
-      }
-
-      try {
-        const res = await fetch(
-          "https://nm-auth-service.onrender.com/userinfo",
-          {
-            headers: {
-              Authorization: "Bearer " + token
-            }
-          }
-        );
-
-        const user = await res.json();
-
-        isLoggedIn = true;
-        userInfoEl.textContent = user.name || user.email;
-        logoutBtn.style.display = "block";
-        signInBtn.style.display = "none";
-        setCheckboxAccess();
-
-      } catch {
-        localStorage.clear();
-        isLoggedIn = false;
-        setCheckboxAccess();
-      }
-    }
-
-    logoutBtn.addEventListener("click", () => {
-      localStorage.clear();
-      location.reload();
     });
 
-    loadUser();
-  </script>
+    const data=await res.json();
+    console.log("token response:",data);
+
+    if(!data.access_token) throw new Error("No token");
+
+    localStorage.setItem("access_token",data.access_token);
+
+    history.replaceState({},document.title,"/");
+  }catch(e){
+    console.error("callback failed",e);
+  }
+})();
+</script>
+
+<script>
+// USER LOAD
+async function loadUser(){
+  const token=localStorage.getItem("access_token");
+
+  if(!token){
+    isLoggedIn=false;
+    updateUI(null);
+    return;
+  }
+
+  try{
+    const res=await fetch(
+      "https://nm-auth-service.onrender.com/userinfo",
+      {
+        headers:{Authorization:"Bearer "+token}
+      }
+    );
+
+    if(!res.ok) throw new Error("userinfo failed");
+
+    const user=await res.json();
+    console.log("user:",user);
+
+    isLoggedIn=true;
+    updateUI(user);
+
+  }catch(err){
+    console.error(err);
+    localStorage.clear();
+    isLoggedIn=false;
+    updateUI(null);
+  }
+}
+
+function updateUI(user){
+  const nameEl=document.getElementById("userName");
+  const avatar=document.getElementById("avatar");
+
+  const signin=document.getElementById("signin");
+  const logout=document.getElementById("logout");
+
+  if(user){
+    nameEl.textContent=user.name || user.email;
+    avatar.textContent=(user.name || user.email)[0].toUpperCase();
+
+    signin.style.display="none";
+    logout.style.display="inline-block";
+  }else{
+    nameEl.textContent="Not logged in";
+    avatar.textContent="?";
+
+    signin.style.display="inline-block";
+    logout.style.display="none";
+  }
+
+  updateAccess();
+}
+
+document.getElementById("logout").onclick=()=>{
+  localStorage.clear();
+  location.reload();
+};
+
+loadUser();
+</script>
 
 </body>
 </html>
