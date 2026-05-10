@@ -23,11 +23,12 @@ async function start() {
 
     app.post("/api/callback", async (req, res) => {
       const { code, redirectUri } = req.body;
+      console.log(process.env.OIDC_TOKEN_ENDPOINT)
 
       if (!code || !redirectUri) {
         return res.status(400).json({ error: "Missing code or redirectUri" });
       }
-
+      
       try {
         const params = new URLSearchParams();
         params.append("grant_type", "authorization_code");
@@ -39,7 +40,7 @@ async function start() {
         const response = await fetch(process.env.OIDC_TOKEN_ENDPOINT!, {
           method: "POST",
           headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
+            "Content-Type": "application/json",
           },
           body: params,
         });
@@ -54,7 +55,7 @@ async function start() {
 
         return res.json(data);
       } catch (err) {
-        console.error("TOKEN ERROR:", err);
+        console.error("TOKEN ERROR:", err.message);
         return res.status(500).json({ error: "Token exchange failed" });
       }
     });

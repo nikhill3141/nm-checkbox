@@ -1,296 +1,313 @@
 <!doctype html>
 
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<title>NM Checkbox</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>NM Checkbox</title>
 
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",sans-serif}
-
-body{
-  background:linear-gradient(135deg,#0f172a,#1e293b);
-  display:flex;justify-content:center;align-items:center;
-  height:100vh;
-}
-
-.parent{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:15px;
-}
-
-.topbar{
-  width:800px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px 15px;
-  border-radius:12px;
-  background:rgba(255,255,255,0.05);
-  backdrop-filter:blur(10px);
-  color:#38bdf8;
-}
-
-.user{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.avatar{
-  width:35px;
-  height:35px;
-  border-radius:50%;
-  background:#38bdf8;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#000;
-  font-weight:bold;
-}
-
-.btn{
-  padding:8px 14px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  font-weight:600;
-}
-
-.signin{background:#38bdf8;color:black}
-.logout{background:#ef4444;color:white}
-
-.container{
-  width:800px;height:700px;
-  background:rgba(255,255,255,0.05);
-  backdrop-filter:blur(12px);
-  border-radius:18px;
-  box-shadow:0 15px 40px rgba(0,0,0,0.5);
-  padding:25px;
-  display:flex;flex-direction:column;
-}
-
-.title{
-  text-align:center;
-  color:#38bdf8;
-  font-size:22px;
-  margin-bottom:15px;
-}
-
-.grid{
-  flex:1;
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(30px,1fr));
-  gap:10px;
-  overflow:auto;
-}
-
-.checkbox{
-  display:flex;justify-content:center;align-items:center;
-}
-
-input[type="checkbox"]{
-  appearance:none;
-  width:30px;height:30px;
-  border:2px solid #64748b;
-  border-radius:6px;
-  cursor:pointer;
-}
-
-input[type="checkbox"]:checked{
-  background:#38bdf8;
-  border-color:#38bdf8;
-}
-
-input[type="checkbox"]:disabled{
-  opacity:0.3;
-  cursor:not-allowed;
-}
-</style>
-
-</head>
-
-<body>
-
-<div class="parent">
-
-<div class="topbar">
-  <div class="user" id="userSection">
-    <div class="avatar" id="avatar">?</div>
-    <span id="userName">Not logged in</span>
-  </div>
-
-  <div>
-    <button id="signin" class="btn signin">Sign In</button>
-    <button id="logout" class="btn logout" style="display:none;">Logout</button>
-  </div>
-</div>
-
-<div class="container">
-  <div class="title">NM Checkbox</div>
-  <div class="grid" id="grid"></div>
-</div>
-
-</div>
-
-<script src="/socket.io/socket.io.js"></script>
-
-<script>
-const socket = io();
-const TOTAL = 500;
-const grid = document.getElementById("grid");
-
-let isLoggedIn = false;
-
-// create checkboxes
-for(let i=0;i<TOTAL;i++){
-  const div=document.createElement("div");
-  div.className="checkbox";
-
-  const input=document.createElement("input");
-  input.type="checkbox";
-  input.id="cb-"+i;
-
-  input.addEventListener("change",(e)=>{
-    if(!isLoggedIn) return;
-    socket.emit("client:checked",{index:i,checked:e.target.checked});
-  });
-
-  div.appendChild(input);
-  grid.appendChild(div);
-}
-
-function updateAccess(){
-  document.querySelectorAll("input").forEach(cb=>{
-    cb.disabled=!isLoggedIn;
-  });
-}
-
-// socket sync
-socket.on("server:checkboxStates",(data)=>{
-  data.forEach((v,i)=>{
-    document.getElementById("cb-"+i).checked=v;
-  });
-});
-
-socket.on("server:checked",(d)=>{
-  document.getElementById("cb-"+d.index).checked=d.checked;
-});
-</script>
-
-<script>
-// SIGN IN
-document.getElementById("signin").onclick=()=>{
-  const AUTH="https://nm-auth-service.onrender.com/nm-auth";
-  const CLIENT_ID="0075a3ec-9ebb-484a-9f91-b8ea9d21e254";
-  const REDIRECT=window.location.origin + "/";
-
-  location.href=`${AUTH}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT}`;
-};
-</script>
-
-<script>
-// HANDLE CODE
-(async ()=>{
-  const params=new URLSearchParams(location.search);
-  const code=params.get("code");
-
-  if(!code) return;
-
-  console.log("code received:",code);
-
-  try{
-    const res=await fetch("/api/callback",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        code,
-        redirectUri:window.location.origin+"/"
-      })
-    });
-
-    const data=await res.json();
-    console.log("token response:",data);
-
-    if(!data.access_token) throw new Error("No token");
-
-    localStorage.setItem("access_token",data.access_token);
-
-    history.replaceState({},document.title,"/");
-  }catch(e){
-    console.error("callback failed",e);
-  }
-})();
-</script>
-
-<script>
-// USER LOAD
-async function loadUser(){
-  const token=localStorage.getItem("access_token");
-
-  if(!token){
-    isLoggedIn=false;
-    updateUI(null);
-    return;
-  }
-
-  try{
-    const res=await fetch(
-      "https://nm-auth-service.onrender.com/userinfo",
-      {
-        headers:{Authorization:"Bearer "+token}
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", sans-serif;
       }
-    );
 
-    if(!res.ok) throw new Error("userinfo failed");
+      body {
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
 
-    const user=await res.json();
-    console.log("user:",user);
+      .parent {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+      }
 
-    isLoggedIn=true;
-    updateUI(user);
+      .topbar {
+        width: 800px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        color: #38bdf8;
+      }
 
-  }catch(err){
-    console.error(err);
-    localStorage.clear();
-    isLoggedIn=false;
-    updateUI(null);
-  }
-}
+      .user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
 
-function updateUI(user){
-  const nameEl=document.getElementById("userName");
-  const avatar=document.getElementById("avatar");
+      .avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: #38bdf8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #000;
+        font-weight: bold;
+      }
 
-  const signin=document.getElementById("signin");
-  const logout=document.getElementById("logout");
+      .btn {
+        padding: 8px 14px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+      }
 
-  if(user){
-    nameEl.textContent=user.name || user.email;
-    avatar.textContent=(user.name || user.email)[0].toUpperCase();
+      .signin {
+        background: #38bdf8;
+        color: black;
+      }
+      .logout {
+        background: #ef4444;
+        color: white;
+      }
 
-    signin.style.display="none";
-    logout.style.display="inline-block";
-  }else{
-    nameEl.textContent="Not logged in";
-    avatar.textContent="?";
+      .container {
+        width: 800px;
+        height: 700px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(12px);
+        border-radius: 18px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        padding: 25px;
+        display: flex;
+        flex-direction: column;
+      }
 
-    signin.style.display="inline-block";
-    logout.style.display="none";
-  }
+      .title {
+        text-align: center;
+        color: #38bdf8;
+        font-size: 22px;
+        margin-bottom: 15px;
+      }
 
-  updateAccess();
-}
+      .grid {
+        flex: 1;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
+        gap: 10px;
+        overflow: auto;
+      }
 
-document.getElementById("logout").onclick=()=>{
-  localStorage.clear();
-  location.reload();
-};
+      .checkbox {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
 
-loadUser();
-</script>
+      input[type="checkbox"] {
+        appearance: none;
+        width: 30px;
+        height: 30px;
+        border: 2px solid #64748b;
+        border-radius: 6px;
+        cursor: pointer;
+      }
 
-</body>
+      input[type="checkbox"]:checked {
+        background: #38bdf8;
+        border-color: #38bdf8;
+      }
+
+      input[type="checkbox"]:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="parent">
+      <div class="topbar">
+        <div class="user" id="userSection">
+          <div class="avatar" id="avatar">?</div>
+          <span id="userName">Not logged in</span>
+        </div>
+
+        <div>
+          <button id="signin" class="btn signin">Sign In</button>
+          <button id="logout" class="btn logout" style="display: none">
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="title">NM Checkbox</div>
+        <div class="grid" id="grid"></div>
+      </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+      const socket = io();
+      const TOTAL = 500;
+      const grid = document.getElementById("grid");
+
+      let isLoggedIn = false;
+
+      // create checkboxes
+      for (let i = 0; i < TOTAL; i++) {
+        const div = document.createElement("div");
+        div.className = "checkbox";
+
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.id = "cb-" + i;
+
+        input.addEventListener("change", (e) => {
+          if (!isLoggedIn) return;
+          socket.emit("client:checked", {
+            index: i,
+            checked: e.target.checked,
+          });
+        });
+
+        div.appendChild(input);
+        grid.appendChild(div);
+      }
+
+      function updateAccess() {
+        document.querySelectorAll("input").forEach((cb) => {
+          cb.disabled = !isLoggedIn;
+        });
+      }
+
+      // socket sync
+      socket.on("server:checkboxStates", (data) => {
+        data.forEach((v, i) => {
+          document.getElementById("cb-" + i).checked = v;
+        });
+      });
+
+      socket.on("server:checked", (d) => {
+        document.getElementById("cb-" + d.index).checked = d.checked;
+      });
+    </script>
+
+    <script>
+      // SIGN IN
+      document.getElementById("signin").onclick = () => {
+        const AUTH = "https://nm-auth-service.onrender.com/nm-auth";
+        const CLIENT_ID = "0075a3ec-9ebb-484a-9f91-b8ea9d21e254";
+        const REDIRECT = window.location.origin + "/";
+
+        location.href = `${AUTH}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT}`;
+      };
+    </script>
+
+    <script>
+      // HANDLE CODE
+      (async () => {
+        const params = new URLSearchParams(location.search);
+        const code = params.get("code");
+
+        if (!code) return;
+
+        console.log("code received:", code);
+
+        try {
+          const res = await fetch("/api/callback", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              code,
+              redirectUri: window.location.origin + "/",
+            }),
+          });
+
+          const data = await res.json();
+          console.log("token response:", data);
+
+          if (!data.access_token) throw new Error("No token");
+
+          localStorage.setItem("access_token", data.access_token);
+
+          history.replaceState({}, document.title, "/");
+        } catch (e) {
+          console.error("callback failed", e);
+        }
+      })();
+    </script>
+
+    <script>
+      // USER LOAD
+      async function loadUser() {
+        const token = localStorage.getItem("access_token");
+
+        if (!token) {
+          isLoggedIn = false;
+          updateUI(null);
+          return;
+        }
+
+        try {
+          const res = await fetch(
+            "https://nm-auth-service.onrender.com/userinfo",
+            {
+              headers: { Authorization: "Bearer " + token },
+            },
+          );
+
+          if (!res.ok) throw new Error("userinfo failed");
+
+          const user = await res.json();
+          console.log("user:", user);
+
+          isLoggedIn = true;
+          updateUI(user);
+        } catch (err) {
+          console.error(err);
+          localStorage.clear();
+          isLoggedIn = false;
+          updateUI(null);
+        }
+      }
+
+      function updateUI(user) {
+        const nameEl = document.getElementById("userName");
+        const avatar = document.getElementById("avatar");
+
+        const signin = document.getElementById("signin");
+        const logout = document.getElementById("logout");
+
+        if (user) {
+          nameEl.textContent = user.name || user.email;
+          avatar.textContent = (user.name || user.email)[0].toUpperCase();
+
+          signin.style.display = "none";
+          logout.style.display = "inline-block";
+        } else {
+          nameEl.textContent = "Not logged in";
+          avatar.textContent = "?";
+
+          signin.style.display = "inline-block";
+          logout.style.display = "none";
+        }
+
+        updateAccess();
+      }
+
+      document.getElementById("logout").onclick = () => {
+        localStorage.clear();
+        location.reload();
+      };
+
+      loadUser();
+    </script>
+  </body>
 </html>
